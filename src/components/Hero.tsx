@@ -12,10 +12,10 @@ const Hero = () => {
           A Todo-List App built with Next.js
         </p>
         <Link
-          href="/login"
-          className="bg-blue-400 px-3 py-2 rounded-xl font-bold cursor-pointer"
+          href="/todos"
+          className="bg-indigo-400 px-3 py-2 rounded-xl font-semibold cursor-pointer"
         >
-          Login Now
+          Get started
         </Link>
       </div>
     </section>
