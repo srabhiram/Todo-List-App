@@ -1,5 +1,10 @@
 @import "tailwindcss";
-
+:root{
+  background-color: #f5f7fa;
+}
+body{
+  background-color: #f5f7fa;
+}
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

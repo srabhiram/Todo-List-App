@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   Select,
   SelectContent,
@@ -7,44 +7,49 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import Image from "next/image";
+import { UserProps } from "@/app/todos/page";
 
-type userProps = {
-  _id : string
-  displayname : string
-  username : string
-}
-const Navbar = ({ user }: { user: userProps[] }) => {
-  const [currentUser, setCurrentUser] = useState<string>("");
-
-  // Update currentUser when user data is available
-  useEffect(() => {
-    if (user.length > 0) {
-      setCurrentUser(user[0]?.displayname);
+const Navbar = ({
+  user,
+  currentUser,
+  setCurrentUser,
+}: {
+  user: UserProps[];
+  currentUser: UserProps | null;
+  setCurrentUser: React.Dispatch<React.SetStateAction<UserProps | null>>;
+}) => {
+  const handleUserChange = (displayname: string) => {
+    const selectedUser = user.find((u) => u.displayname === displayname);
+    if (selectedUser) {
+      setCurrentUser(selectedUser);
     }
-  }, [user]);
+  };
+
   return (
-    <header className="flex justify-between p-2 bg-gray-200">
+    <header className="flex justify-between p-2 bg-white shadow-md">
       <h1>Todo List</h1>
       <div className="flex gap-4">
-        {/* <button className="bg-blue-400 px-2 py-1 rounded-xl">
-          {currentUser}
-        </button> */}
-        <Select defaultValue={currentUser} onValueChange={setCurrentUser}>
-          <SelectTrigger className="w-[150px] border-2 bg-gray-300">
-            <SelectValue placeholder={currentUser} />
+        <Select
+          value={currentUser?.displayname || ""}
+          onValueChange={handleUserChange}
+        >
+          <SelectTrigger className="w-[150px] border-2 bg-white">
+            <SelectValue
+              placeholder={
+                user.length > 0 ? "Select a user" : "No users available"
+              }
+            />
           </SelectTrigger>
           <SelectContent>
-            {user?.map((user) => (
-              <SelectItem value={user.displayname} key={user._id}>
-                {user.displayname}
+            {user.map((userItem) => (
+              <SelectItem value={userItem.displayname} key={userItem._id}>
+                {userItem.displayname}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
         <div className="flex gap-5 items-center">
-          <Image alt="profilepng" src={"/profile.png"} width={20} height={10} />
-          <b>{currentUser}</b>
+          <b>{currentUser?.displayname || "No user selected"}</b>
         </div>
       </div>
     </header>
