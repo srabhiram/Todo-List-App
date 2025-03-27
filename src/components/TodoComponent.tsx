@@ -3,6 +3,7 @@
 import { useUserContext } from "@/app/context/userContext";
 import React, { useState } from "react";
 import CreateTodoDailog from "./CreateTodoDailog";
+import { Checkbox } from "./ui/checkbox";
 
 type Priority = {
   high: boolean;
@@ -11,7 +12,7 @@ type Priority = {
 };
 
 const CreateTodoPage = ({ userId }: { userId: string }) => {
-  const { createTodo, TodoData, error } = useUserContext();
+  const { createTodo, TodoData, error,updateTodoStatus } = useUserContext();
 
   const [formData, setFormData] = useState({
     title: "",
@@ -53,11 +54,11 @@ const CreateTodoPage = ({ userId }: { userId: string }) => {
       priority: formData.priority,
       tags: formData.tags,
       dueDate: formData.dueDate,
+      completed: false,
     };
 
     try {
       await createTodo(todo, userId);
-      // Reset form and close dialog on success
       setFormData({
         title: "",
         description: "",
@@ -70,7 +71,7 @@ const CreateTodoPage = ({ userId }: { userId: string }) => {
       console.error("Failed to create todo:", err);
     }
   };
-console.log(TodoData)
+
   return (
     <>
       <CreateTodoDailog
@@ -88,26 +89,33 @@ console.log(TodoData)
           TodoData.map((todo) => (
             <div key={todo._id} className="p-4 border-b">
               <div className="flex items-center justify-between">
-                <h1 className="font-semibold">{todo.title}</h1>
+                <div className="flex gap-4 items-center">
+                  <Checkbox
+                    className="border-black border-2"
+                    checked={todo.completed}
+                    onCheckedChange={() => {}}
+                  />
+                  <h1 className="font-semibold">{todo.title}</h1>
+                </div>
                 <div className="flex gap-3">
                   <button className="text-blue-500">Note</button>
                   <button className="text-green-500">Edit</button>
                   <button className="text-red-500">Delete</button>
                 </div>
               </div>
-
               <div className="flex flex-col gap-2 mt-2">
                 <p className="text-gray-700">Description: {todo.description}</p>
-                <span className="text-white bg-red-500 w-fit text-sm rounded px-1 py-1">
-                  {todo?.priority?.high
-                    ? "High"
-                    : todo?.priority?.medium
-                    ? "Medium"
-                    : todo?.priority?.low
-                    ? "Low"
-                    : ""}
-                </span>
-              
+
+                {/* ✅ Conditionally display priority only if at least one is true */}
+                {(todo.priority.high || todo.priority.medium || todo.priority.low) && (
+                  <span className="text-white bg-red-500 w-fit text-sm rounded px-1 py-1">
+                    {todo.priority.high
+                      ? "High"
+                      : todo.priority.medium
+                      ? "Medium"
+                      : "Low"}
+                  </span>
+                )}
               </div>
             </div>
           ))

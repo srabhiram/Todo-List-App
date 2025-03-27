@@ -24,7 +24,7 @@ interface CreateTodoDailogProps {
     title: string;
     description: string;
     tags: string[];
-    dueDate: string;
+    
     priority: Priority;
   };
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -84,36 +84,21 @@ const CreateTodoDailog = ({
             />
           </div>
 
-          {/* Priority Checkboxes */}
           <div>
-            <Label>Priority</Label>
-            <div className="flex space-x-4 mt-2">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="high"
-                  checked={formData.priority.high}
-                  onCheckedChange={() => handlePriorityChange('high')}
-                />
-                <Label htmlFor="high">High</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="medium"
-                  checked={formData.priority.medium}
-                  onCheckedChange={() => handlePriorityChange('medium')}
-                />
-                <Label htmlFor="medium">Medium</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="low"
-                  checked={formData.priority.low}
-                  onCheckedChange={() => handlePriorityChange('low')}
-                />
-                <Label htmlFor="low">Low</Label>
-              </div>
-            </div>
-          </div>
+  <label className="flex gap-2">
+    <Checkbox checked={formData.priority.high} onCheckedChange={() => handlePriorityChange("high")} />
+    High Priority
+  </label>
+  <label className="flex gap-2">
+    <Checkbox checked={formData.priority.medium} onCheckedChange={() => handlePriorityChange("medium")} />
+    Medium Priority
+  </label>
+  <label className="flex gap-2">
+    <Checkbox checked={formData.priority.low} onCheckedChange={() => handlePriorityChange("low")} />
+    Low Priority
+  </label>
+</div>
+
 
           {/* tags */}
           <div>
@@ -125,19 +110,6 @@ const CreateTodoDailog = ({
               value={formData.tags}
               onChange={handleChange}
               placeholder="Enter tags (optional)"
-            />
-          </div>
-
-          {/* duedate */}
-          <div>
-            <Label htmlFor="duedate">Due Date</Label>
-            <Input
-              id="duedate"
-              name="duedate"
-              type="date"
-              value={formData.dueDate}
-              onChange={handleChange}
-              placeholder="Enter due date"
             />
           </div>
 

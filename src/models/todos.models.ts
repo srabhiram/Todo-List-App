@@ -1,34 +1,30 @@
 import mongoose from "mongoose";
 
 
-
 const todoSchema = new mongoose.Schema(
   {
     title: {
       type: String,
       required: true,
-      trim: true,
+     
     },
     description: {
       type: String,
-      trim: true,
+    
     },
     priority: {
+      high: { type: Boolean },
+      medium: { type: Boolean },
+      low: { type: Boolean },
       
-        type: Object, // Ensure it's an object
-        default: { high: false, medium: false, low: false }, // Default values
-
     },
-    completed: { type: Boolean, default: false },
+    isCompleted: { type: Boolean, default: false },
     tags: [
       {
         type: String,
         trim: true,
       },
     ],
-    dueDate: {
-      type: Date,
-    },
     note: [
       {
         type: String,
@@ -43,6 +39,8 @@ const todoSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
+if (mongoose.models.Todo) {
+  delete mongoose.models.Todo; // Remove the cached model
+}
 const Todo = mongoose.models.Todo || mongoose.model("Todo", todoSchema);
 export default Todo;
