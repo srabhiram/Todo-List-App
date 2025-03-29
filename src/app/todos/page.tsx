@@ -1,7 +1,6 @@
 "use client";
 import Navbar from "@/components/Navbar";
 import React, { useEffect, useState } from "react";
-import Sidebar from "@/components/Sidebar";
 import { useAppContext } from "../context/userContext";
 import TodoComponent from "@/components/TodoComponent";
 
@@ -11,10 +10,9 @@ export type UserProps = {
   username: string;
 };
 
-
 const TodoPage = () => {
   const [currentUser, setCurrentUser] = useState<UserProps | null>(null);
-  const {userData} = useAppContext()
+  const { userData } = useAppContext();
 
   // // Update currentUser when user data changes and fetch todos
   useEffect(() => {
@@ -29,19 +27,19 @@ const TodoPage = () => {
   //     fetchTodos(currentUser._id);
   //   }
   // }, [currentUser, fetchTodos]);
-  
+
   return (
     <>
       <header>
-        <Navbar user={userData} currentUser={currentUser} setCurrentUser={setCurrentUser}/>
+        <Navbar
+          user={userData}
+          currentUser={currentUser}
+          setCurrentUser={setCurrentUser}
+        />
       </header>
-      <section className="flex gap-3 mx-4 mt-5 h-full">
-        <div className="mx-3 p-2 bg-white rounded w-1/7 flex-shrink-0 shadow-md h-screen">
-          <Sidebar />
-        </div>
-
-        <div className="mx-3 p-2  flex-grow h-full">
-          <TodoComponent  userId={currentUser?._id || ""}/>
+      <section className="flex gap-3 mx-2 mt-5 h-full">
+        <div className=" p-2  flex-grow h-full">
+          <TodoComponent userId={currentUser?._id || ""} />
         </div>
       </section>
     </>

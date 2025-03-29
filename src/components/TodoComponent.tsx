@@ -2,13 +2,14 @@
 "use client";
 
 import React, { useEffect } from "react";
-import CreateTodoDailog from "./CreateTodoDailog";
+import CreateTodoDailog from "./TodoDailog";
 import { Checkbox } from "./ui/checkbox";
 import { useAppContext } from "@/app/context/userContext";
-import TodoUI from "./loading UI/Todo-UI";
+import TodoUI from "./skeeton ui/Todo-UI";
 import { Edit } from "lucide-react";
 import axios from "axios";
 import DeleteComponent from "./DeleteComponent";
+import EditComponent from "./EditComponent";
 
 // type Priority = {
 //   high: boolean;
@@ -23,6 +24,7 @@ const TodoComponent = ({ userId }: { userId: string }) => {
     fetchTodos(userId);
   }, [fetchTodos, userId, setLoading]);
   const TodoData = todoData?.filter((todo) => todo.user === userId) || [];
+  
   const handleTodoDelete = async (todo_id: string) => {
     try {
       axios.delete("/api/todo/delete", {
@@ -54,9 +56,7 @@ const TodoComponent = ({ userId }: { userId: string }) => {
                   <span className="cursor-pointer text-xs tracking-wide font-medium flex gap-0.5 items-center  hover:bg-black/10 px-1 py-0.5 text-black  rounded ">
                     <Edit className="w-3 " /> Add Note
                   </span>
-                  <span className="cursor-pointer text-xs tracking-wide font-medium flex gap-0.5 items-center hover:bg-black/10 px-1 py-0.5 text-black  rounded ">
-                    <Edit className="w-3 " /> Edit
-                  </span>
+                  <EditComponent todo = {todo}/>
 
                   <DeleteComponent
                     todoId={todo._id}

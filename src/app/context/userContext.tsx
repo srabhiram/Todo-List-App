@@ -28,15 +28,12 @@ type User = {
 };
 
 // Todo type
-type TodoType = {
+export type TodoType = {
   _id: string;
   title: string;
   description: string;
-  priority: {
-    high: boolean;
-    medium: boolean;
-    low: boolean;
-  };
+  mentionedUsers: string[];
+  priority: string;
   isCompleted: boolean;
   tags: string[];
   note: string[];
