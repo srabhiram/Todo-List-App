@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { TodoType, useAppContext } from '@/app/context/userContext';
 import axios from 'axios';
-import { Edit3, EditIcon, FileEdit } from 'lucide-react';
+import {  EditIcon } from 'lucide-react';
 
 const EditComponent = ({ todo }: { todo: TodoType }) => {
   const { fetchTodos } = useAppContext();
