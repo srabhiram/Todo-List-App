@@ -1,9 +1,9 @@
 "use client";
 import Navbar from "@/components/Navbar";
 import React, { useEffect, useState } from "react";
-import { useUserContext } from "../context/userContext";
-import TodoComponent from "@/components/TodoComponent";
 import Sidebar from "@/components/Sidebar";
+import { useAppContext } from "../context/userContext";
+import TodoComponent from "@/components/TodoComponent";
 
 export type UserProps = {
   _id: string;
@@ -13,27 +13,27 @@ export type UserProps = {
 
 
 const TodoPage = () => {
-  const { usersData, fetchTodos } = useUserContext();
   const [currentUser, setCurrentUser] = useState<UserProps | null>(null);
+  const {userData} = useAppContext()
 
-  // Update currentUser when user data changes and fetch todos
+  // // Update currentUser when user data changes and fetch todos
   useEffect(() => {
-    if (usersData.length > 0 && !currentUser) {
-      setCurrentUser(usersData[0]);
+    if (userData !== null && userData.length > 0 && !currentUser) {
+      setCurrentUser(userData[0]);
     }
-  }, [usersData, currentUser]);
+  }, [userData, currentUser]);
 
-  // Fetch todos when currentUser changes
-  useEffect(() => {
-    if (currentUser?._id) {
-      fetchTodos(currentUser._id);
-    }
-  }, [currentUser, fetchTodos]);
+  // // Fetch todos when currentUser changes
+  // useEffect(() => {
+  //   if (currentUser?._id) {
+  //     fetchTodos(currentUser._id);
+  //   }
+  // }, [currentUser, fetchTodos]);
   
   return (
     <>
       <header>
-        <Navbar user={usersData} currentUser={currentUser} setCurrentUser={setCurrentUser} />
+        <Navbar user={userData} currentUser={currentUser} setCurrentUser={setCurrentUser}/>
       </header>
       <section className="flex gap-3 mx-4 mt-5 h-full">
         <div className="mx-3 p-2 bg-white rounded w-1/7 flex-shrink-0 shadow-md h-screen">
@@ -41,7 +41,7 @@ const TodoPage = () => {
         </div>
 
         <div className="mx-3 p-2  flex-grow h-full">
-          <TodoComponent userId={currentUser?._id || ""}/>
+          <TodoComponent  userId={currentUser?._id || ""}/>
         </div>
       </section>
     </>

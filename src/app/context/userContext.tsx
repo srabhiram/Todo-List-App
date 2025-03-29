@@ -1,170 +1,107 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import React, {
+import {
   createContext,
   useCallback,
   useContext,
   useEffect,
   useState,
 } from "react";
+import axios from "axios";
 
-export interface UserDataProps {
+// Interfaces and types
+
+type AppContextType = {
+  userData: User[] | null;
+  setUserData: React.Dispatch<React.SetStateAction<User[] | null>>;
+  todoData: TodoType[] | null;
+  setTodoData: React.Dispatch<React.SetStateAction<TodoType[] | null>>;
+  fetchTodos: (userId: string) => Promise<void>;
+  loading: boolean;
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>;
+};
+// User type
+type User = {
   _id: string;
-  displayname: string;
   username: string;
-  todos: string[];
-}
+  displayname: string;
+};
 
-interface Todo {
-  _id?: string;
+// Todo type
+type TodoType = {
+  _id: string;
   title: string;
-  description?: string;
+  description: string;
   priority: {
     high: boolean;
     medium: boolean;
     low: boolean;
   };
+  isCompleted: boolean;
+  tags: string[];
+  note: string[];
   user: string;
-}
-
-interface ContextProps {
-  usersData: UserDataProps[];
-  TodoData: Todo[];
-  setTodoData: React.Dispatch<React.SetStateAction<Todo[]>>;
-  createTodo: (todo: Omit<Todo, "user">, userId: string) => Promise<void>;
-  fetchTodos: (userId: string) => Promise<void>;
-  updateTodoStatus: (todoId:string, completed:boolean)=>Promise<void>;
-  error: string | null;
-}
-
-const UserContext = createContext<ContextProps | null>(null);
-
-// Custom hook for context consumption
-export const useUserContext = () => {
-  const context = useContext(UserContext);
-  if (!context) {
-    throw new Error("useUserContext must be used within a ContextProvider");
-  }
-  return context;
 };
 
-export default function ContextProvider({
+const AppContext = createContext<AppContextType | null>(null);
+
+export function AppContextProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [usersData, setUsersData] = useState<UserDataProps[]>([]);
-  const [TodoData, setTodoData] = useState<Todo[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const [userData, setUserData] = useState<User[] | null>(null);
+  const [todoData, setTodoData] = useState<TodoType[] | null>(null);
+  const [loading, setLoading] = useState(false);
 
+  // function for fetch users from getUsers endpoint
+  const fetchUsers = useCallback(async () => {
+    const res = await axios.get("/api/getUsers");
+    setUserData(res.data.data);
+  }, []);
+
+  // function for fetching todos for current user
+  const fetchTodos = useCallback(async (userId: string) => {
+    if (!userId) return;
+    try {
+      const res = await axios.get("/api/todo/get", {
+        params: { user: userId },
+      });
+      setTodoData(res.data.data);
+    } catch (error:any) {
+      console.error(error.message);
+      throw new Error("Error fetching todos");
+    } finally{
+      setLoading(false);
+    }
+  }, []);
+  // useffect fo rendering the users at the component mount
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [fetchUsers]);
 
-  const fetchUsers = async () => {
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_APP_URI}/api/getUser`
-      );
-      const data = await response.json();
-      setUsersData(data.data);
-    } catch (error) {
-      console.error("Error fetching users:", error);
-      setUsersData([]);
-      setTodoData([]);
-    }
+  // context provider values
+  const contextValue: AppContextType = {
+    userData,
+    setUserData,
+    todoData,
+    setTodoData,
+    fetchTodos,
+    loading,
+    setLoading,
   };
-
-  // Create todo function
-  const createTodo = async (todo: Omit<Todo, "user">, userId: string) => {
-    setError(null);
-    try {
-      if (!userId) {
-        throw new Error("No user found. Please log in.");
-      }
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_APP_URI}/api/todo/add`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            ...todo,
-            user: userId,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to create todo");
-      }
-
-      const result = await response.json();
-      const newTodo: Todo = result.task; // ✅ Full todo object
-
-      setTodoData((prev) => [...prev, newTodo]); // ✅ Correctly updating state
-
-      setUsersData((prev) =>
-        prev.map((user) =>
-          user._id === userId
-            ? { ...user, todos: [...user.todos, newTodo._id!] }
-            : user
-        )
-      );
-    } catch (err: any) {
-      setError(err.message);
-      throw err;
-    }
-  };
-
-  // Fetch todos for a specific user
-  const fetchTodos = useCallback(async (userId: string) => {
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_APP_URI}/api/todo/get?user=${userId}`
-      );
-      const data = await response.json();
-      setTodoData(data.data);
-    } catch (error) {
-      console.error("Error fetching todos:", error);
-      setTodoData([]);
-    }
-  }, []);
- // ✅ Update todo completion status
- const updateTodoStatus = async (todoId: string, completed: boolean) => {
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URI}/api/todo/update`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ todoId, completed }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update todo');
-      }
-
-      const { todo } = await response.json();
-
-      // ✅ Update state in real-time
-      setTodoData((prevTodos) =>
-        prevTodos.map((t) => (t._id === todo._id ? { ...t, completed: todo.completed } : t))
-      );
-    } catch (err) {
-      console.error('Error updating todo:', err);
-    }
-  };
-
 
   return (
-    <UserContext.Provider
-      value={{ usersData, TodoData, createTodo, error, fetchTodos, setTodoData, updateTodoStatus }}
-    >
+    <AppContext.Provider value={contextValue as AppContextType | null}>
       {children}
-    </UserContext.Provider>
+    </AppContext.Provider>
   );
+}
+
+export function useAppContext() {
+  const context = useContext(AppContext);
+  if (context === null) {
+    throw new Error("useAppContext must be used within a ContextProvider");
+  }
+  return context;
 }

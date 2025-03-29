@@ -9,17 +9,17 @@ import {
 } from "@/components/ui/select";
 import { UserProps } from "@/app/todos/page";
 
-const Navbar = ({
-  user,
-  currentUser,
-  setCurrentUser,
-}: {
-  user: UserProps[];
+// types and interfaces
+type NavbarProps = {
+  user: UserProps[] | null;
   currentUser: UserProps | null;
   setCurrentUser: React.Dispatch<React.SetStateAction<UserProps | null>>;
-}) => {
+};
+
+const Navbar = ({ user, currentUser, setCurrentUser }: NavbarProps) => {
+  // handling users change in selec component
   const handleUserChange = (displayname: string) => {
-    const selectedUser = user.find((u) => u.displayname === displayname);
+    const selectedUser = user?.find((u) => u.displayname === displayname);
     if (selectedUser) {
       setCurrentUser(selectedUser);
     }
@@ -36,12 +36,14 @@ const Navbar = ({
           <SelectTrigger className="w-[150px] border-2 bg-white">
             <SelectValue
               placeholder={
-                user.length > 0 ? "Select a user" : "No users available"
+                user && user?.length > 0
+                  ? "Select a user"
+                  : "No users available"
               }
             />
           </SelectTrigger>
           <SelectContent>
-            {user.map((userItem) => (
+            {user?.map((userItem) => (
               <SelectItem value={userItem.displayname} key={userItem._id}>
                 {userItem.displayname}
               </SelectItem>

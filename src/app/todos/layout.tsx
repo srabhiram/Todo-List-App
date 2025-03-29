@@ -1,5 +1,5 @@
 import React from "react";
-import ContextProvider from "../context/userContext";
+import { AppContextProvider } from "../context/userContext";
 
 
 const todoLayout = async ({
@@ -7,7 +7,7 @@ const todoLayout = async ({
 }: Readonly<{
   children: React.ReactNode;
 }>) => {
-  return <ContextProvider>{children}</ContextProvider>;
+  return <AppContextProvider>{children}</AppContextProvider>;
 };
 
 export default todoLayout;
