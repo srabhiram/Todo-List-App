@@ -1,12 +1,14 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import CreateTodoDailog from "./CreateTodoDailog";
 import { Checkbox } from "./ui/checkbox";
 import { useAppContext } from "@/app/context/userContext";
-import Todo from "@/models/todos.models";
 import TodoUI from "./loading UI/Todo-UI";
-import { Edit, Edit2Icon } from "lucide-react";
+import { Edit } from "lucide-react";
+import axios from "axios";
+import DeleteComponent from "./DeleteComponent";
 
 // type Priority = {
 //   high: boolean;
@@ -20,27 +22,23 @@ const TodoComponent = ({ userId }: { userId: string }) => {
     setLoading(true);
     fetchTodos(userId);
   }, [fetchTodos, userId, setLoading]);
-  const TodoData = todoData?.filter((todo) => todo.user === userId);
-  console.log(TodoData);
-
-  const [isOpen, setIsOpen] = useState(false);
-  console.log(TodoData)
-if(loading) return(
-  <TodoUI/>
-)
+  const TodoData = todoData?.filter((todo) => todo.user === userId) || [];
+  const handleTodoDelete = async (todo_id: string) => {
+    try {
+      axios.delete("/api/todo/delete", {
+        params: { todoId: todo_id },
+      });
+      fetchTodos(userId);
+    } catch (error: any) {
+      console.log(error.message);
+    }
+  };
+  if (loading) return <TodoUI />;
   return (
     <>
-      {/* <CreateTodoDailog
-        formData={formData}
-        handleChange={handleChange}
-        handlePriorityChange={handlePriorityChange}
-        handleSubmit={handleSubmit}
-        isOpen={isOpen}
-        setIsOpen={setIsOpen}
-        error={error}
-      /> */}
+      <CreateTodoDailog userId={userId} />
       <div className="bg-white my-3 p-4 rounded shadow-md">
-        {todoData!.length > 0 ? (
+        {TodoData?.length > 0 ? (
           TodoData?.map((todo) => (
             <div key={todo._id} className="p-4 border-b">
               <div className="flex items-center justify-between">
@@ -59,9 +57,11 @@ if(loading) return(
                   <span className="cursor-pointer text-xs tracking-wide font-medium flex gap-0.5 items-center hover:bg-black/10 px-1 py-0.5 text-black  rounded ">
                     <Edit className="w-3 " /> Edit
                   </span>
-                  <span className="cursor-pointer text-xs tracking-wide font-medium flex gap-0.5 items-center hover:bg-red-300 px-1 py-0.5 text-black  rounded ">
-                    <Edit className="w-3 " /> Delete
-                  </span>
+
+                  <DeleteComponent
+                    todoId={todo._id}
+                    handleTodoDelete={handleTodoDelete}
+                  />
                 </div>
               </div>
               <div className="flex flex-col gap-2 mt-2">
@@ -79,11 +79,9 @@ if(loading) return(
             </div>
           ))
         ) : (
-         <div className="w-full text-gray-400 flex justify-center items-center text-center text-xl">
-            <p>
-                No Todos found
-            </p>
-         </div>
+          <div className="w-full text-gray-400 flex justify-center items-center text-center text-xl">
+            <p>No Todos found</p>
+          </div>
         )}
       </div>
     </>

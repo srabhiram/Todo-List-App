@@ -9,16 +9,16 @@ connectDB();
 export async function POST(request: Request) {
   const data = await request.json();
   console.log("data: " , data);
-  const { title, description, user, priority, note, tags, dueDate } = data;
+  const {formData: {title, description, priority, note, tags, mentionedUsers}, userId} = data;
   try {
     const todo = new Todo({
       title,
       description,
-      user,
+      user : userId,
       priority,
       note,
       tags,
-      dueDate
+      mentionedUsers
     });
     await todo.save();
     const updatedData = await User.findOneAndUpdate(todo.user, {
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     console.log(updatedData);
     return NextResponse.json(
       {
-        task: todo,
+        data: todo,
       },
       {
         status: 201,
