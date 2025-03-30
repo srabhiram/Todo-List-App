@@ -8,8 +8,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { UserProps } from "@/app/todos/page";
+import { FaUserCircle, FaTasks } from "react-icons/fa";
 
-// types and interfaces
+// Types and interfaces
 type NavbarProps = {
   user: UserProps[] | null;
   currentUser: UserProps | null;
@@ -17,7 +18,7 @@ type NavbarProps = {
 };
 
 const Navbar = ({ user, currentUser, setCurrentUser }: NavbarProps) => {
-  // handling users change in selec component
+  // Handling user change in select component
   const handleUserChange = (displayname: string) => {
     const selectedUser = user?.find((u) => u.displayname === displayname);
     if (selectedUser) {
@@ -26,32 +27,51 @@ const Navbar = ({ user, currentUser, setCurrentUser }: NavbarProps) => {
   };
 
   return (
-    <header className="flex justify-between p-2 bg-white shadow-md">
-      <h1>Todo List</h1>
-      <div className="flex gap-4">
+    <header className="flex justify-between items-center p-4 bg-white shadow-lg border-b border-gray-200">
+      {/* Logo/Title */}
+      <div className="flex items-center gap-2">
+        <FaTasks className="text-indigo-600 text-2xl" />
+        <h1 className="text-xl font-semibold text-gray-800">Todo List</h1>
+      </div>
+
+      {/* User Selection and Display */}
+      <div className="flex items-center gap-6">
         <Select
           value={currentUser?.displayname || ""}
           onValueChange={handleUserChange}
         >
-          <SelectTrigger className="w-[150px] border-2 bg-white">
-            <SelectValue
-              placeholder={
-                user && user?.length > 0
-                  ? "Select a user"
-                  : "No users available"
-              }
-            />
+          <SelectTrigger className="w-[180px] bg-white border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 pl-3 pr-8">
+            <div className="flex items-center gap-2">
+              
+              <SelectValue
+                placeholder={
+                  user && user.length > 0 ? "Select a user" : "No users available"
+                }
+              />
+            </div>
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-white border-gray-200 shadow-lg rounded-lg">
             {user?.map((userItem) => (
-              <SelectItem value={userItem.displayname} key={userItem._id}>
+              <SelectItem
+                value={userItem.displayname}
+                key={userItem._id}
+                className="flex items-center gap-2 px-3 py-2 hover:bg-indigo-50 hover:text-indigo-600 cursor-pointer transition-colors"
+              >
+               
                 {userItem.displayname}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
-        <div className="flex gap-5 items-center">
-          <b>{currentUser?.displayname || "No user selected"}</b>
+
+        {/* Current User Display */}
+        <div className="flex items-center gap-3">
+          <FaUserCircle className="text-gray-500 text-xl" />
+          <span className="text-sm font-medium text-gray-700">
+            {currentUser?.displayname || (
+              <span className="text-gray-400 italic">No user selected</span>
+            )}
+          </span>
         </div>
       </div>
     </header>
