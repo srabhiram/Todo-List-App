@@ -10,7 +10,6 @@ const NavbarUI = () => {
         <div className="w-32 h-6 bg-gray-200 rounded-full" />
       </div>
 
-      {/* Skeleton for User Selection, Export Button, and Display */}
       <div className="flex items-center gap-6">
         {/* Skeleton for Select */}
         <div className="flex items-center gap-2 w-[180px] h-10 bg-gray-200 rounded-lg px-3">

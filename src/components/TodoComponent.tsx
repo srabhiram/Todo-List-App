@@ -12,7 +12,7 @@ import EditComponent from "./EditComponent";
 import { timeAgo } from "@/helpers/timeago";
 import AddNoteDialog from "./AddNoteDialog";
 import { useRouter } from "next/navigation";
-import { FaSort, FaFilter, FaTasks, FaPlus } from "react-icons/fa";
+import { FaSort, FaFilter, FaTasks, FaPlus, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 const TodoComponent = ({ userId }: { userId: string }) => {
   const { todoData, fetchTodos, loading, setLoading } = useAppContext();
@@ -20,6 +20,8 @@ const TodoComponent = ({ userId }: { userId: string }) => {
   const [selectedPriority, setSelectedPriority] = useState<string>("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const todosPerPage = 5; // Number of todos per page
 
   const router = useRouter();
 
@@ -29,6 +31,7 @@ const TodoComponent = ({ userId }: { userId: string }) => {
     setSelectedPriority("");
     setSelectedTags([]);
     setSortBy("");
+    setCurrentPage(1); // Reset to first page when user changes
   }, [fetchTodos, userId, setLoading]);
 
   const TodoData = useMemo(() => {
@@ -115,18 +118,28 @@ const TodoComponent = ({ userId }: { userId: string }) => {
     }
   };
 
+  const totalTodos = filteredTodos.length;
+  const totalPages = Math.ceil(totalTodos / todosPerPage);
+  const indexOfLastTodo = currentPage * todosPerPage;
+  const indexOfFirstTodo = indexOfLastTodo - todosPerPage;
+  const currentTodos = filteredTodos.slice(indexOfFirstTodo, indexOfLastTodo);
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
   if (loading) return <TodoUI />;
 
   return (
     <div className="container mx-auto p-4">
-      {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-2">
           <FaTasks className="text-indigo-600 text-2xl" />
           <h1 className="text-2xl font-bold text-gray-800">Your Todos</h1>
         </div>
         <div className="flex items-center gap-4">
-          {/* Sort Dropdown */}
           <div className="relative">
             <FaSort className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500" />
             <select
@@ -138,8 +151,6 @@ const TodoComponent = ({ userId }: { userId: string }) => {
               <option value="priority">Priority</option>
             </select>
           </div>
-
-          {/* Priority Filter */}
           <div className="relative">
             <FaFilter className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500" />
             <select
@@ -152,16 +163,14 @@ const TodoComponent = ({ userId }: { userId: string }) => {
               <option value="low">Low</option>
             </select>
           </div>
-
-          {/* Create Todo Button */}
           <CreateTodoDailog userId={userId} />
         </div>
       </div>
 
       {/* Todo List */}
       <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-        {filteredTodos.length > 0 ? (
-          filteredTodos.map((todo) => (
+        {currentTodos.length > 0 ? (
+          currentTodos.map((todo) => (
             <div
               key={todo._id}
               className="p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors"
@@ -198,7 +207,6 @@ const TodoComponent = ({ userId }: { userId: string }) => {
                 </div>
               </div>
               <div className="mt-3 flex items-center gap-3">
-                {/* Priority Badge */}
                 {todo.priority && (
                   <span
                     className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
@@ -213,6 +221,16 @@ const TodoComponent = ({ userId }: { userId: string }) => {
                       todo.priority.slice(1)}
                   </span>
                 )}
+                <div className=" flex flex-wrap gap-2">
+                {todo.tags.map((tag, index) => (
+                  <span 
+                    key={index} 
+                    className="bg-indigo-100 text-indigo-800 px-2.5 py-1 rounded-full text-xs font-medium hover:bg-indigo-200 transition-colors"
+                  >
+                         {"#"}{tag}
+                  </span>
+                ))}
+              </div>
                 <span className="text-xs text-gray-500">
                   {timeAgo(todo.createdAt)}
                 </span>
@@ -232,6 +250,49 @@ const TodoComponent = ({ userId }: { userId: string }) => {
           </div>
         )}
       </div>
+
+      {/* Pagination */}
+      {totalTodos > todosPerPage && (
+        <div className="mt-6 flex items-center justify-between">
+          <div className="text-sm text-gray-600">
+            Showing {indexOfFirstTodo + 1} to{" "}
+            {Math.min(indexOfLastTodo, totalTodos)} of {totalTodos} todos
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="p-2 rounded-full bg-gray-100 text-gray-600 hover:bg-indigo-100 hover:text-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <FaChevronLeft />
+            </button>
+            <div className="flex gap-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (page) => (
+                  <button
+                    key={page}
+                    onClick={() => handlePageChange(page)}
+                    className={`px-3 py-1 rounded-full text-sm font-medium ${
+                      currentPage === page
+                        ? "bg-indigo-600 text-white"
+                        : "bg-gray-100 text-gray-600 hover:bg-indigo-100 hover:text-indigo-600"
+                    } transition-colors`}
+                  >
+                    {page}
+                  </button>
+                )
+              )}
+            </div>
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="p-2 rounded-full bg-gray-100 text-gray-600 hover:bg-indigo-100 hover:text-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <FaChevronRight />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
