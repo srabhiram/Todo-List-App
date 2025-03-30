@@ -8,8 +8,6 @@ export async function PUT(req: NextRequest) {
       formData: { title, description, priority, note, tags, mentionedUsers, isCompleted },
     } = await req.json();
     const todoId = req.nextUrl.searchParams.get("todoId");
-    console.log(todoId);
-    console.log(title, description, priority, note, tags, mentionedUsers, isCompleted);
     if (!todoId) {
       return NextResponse.json(
         { message: "Todo ID is required" },

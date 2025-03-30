@@ -8,23 +8,24 @@ import { todo } from "node:test";
 connectDB();
 export async function POST(request: Request) {
   const data = await request.json();
-  console.log("data: " , data);
-  const {formData: {title, description, priority, note, tags, mentionedUsers}, userId} = data;
+  const {
+    formData: { title, description, priority, note, tags, mentionedUsers },
+    userId,
+  } = data;
   try {
     const todo = new Todo({
       title,
       description,
-      user : userId,
+      user: userId,
       priority,
       note,
       tags,
-      mentionedUsers
+      mentionedUsers,
     });
     await todo.save();
-    const updatedData = await User.findOneAndUpdate(todo.user, {
+    await User.findOneAndUpdate(todo.user, {
       $push: { todos: todo },
     });
-    console.log(updatedData);
     return NextResponse.json(
       {
         data: todo,
@@ -37,7 +38,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error: error.message,
-        data: todo
+        data: todo,
       },
       {
         status: 500,
