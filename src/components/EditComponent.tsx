@@ -54,7 +54,7 @@ const EditComponent = ({ todo }: { todo: TodoType }) => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
 
-    if (name === "tags" || name === "mentionedUsers") {
+    if (name === "tags" || name === "mentionedUsers" || name === "note") {
       setFormData((prevData) => ({
         ...prevData,
         [name]: value.split(",").map((item) => item.trim()), // Convert comma-separated values to array

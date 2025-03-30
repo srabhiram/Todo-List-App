@@ -15,10 +15,17 @@ import axios from "axios";
 import { NotebookPenIcon } from "lucide-react";
 import { useState } from "react";
 
-const AddNoteDialog = ({ todoId, userId }: { todoId: string, userId: string }) => {
+const AddNoteDialog = ({
+  todoId,
+  userId,
+}: {
+  todoId: string;
+  userId: string;
+}) => {
   const [note, setNote] = useState<string>(""); // ✅ Use string instead of array
   const [loading, setLoading] = useState(false);
-  const { fetchTodos} = useAppContext();
+  const [isOpen, setIsOpen] = useState(false);
+  const { fetchTodos } = useAppContext();
 
   const handleNote = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,15 +39,16 @@ const AddNoteDialog = ({ todoId, userId }: { todoId: string, userId: string }) =
       );
 
       fetchTodos(userId); // ✅ Refresh todo list after update
+      setIsOpen(false);
     } catch (error) {
       console.error("Failed to update todo:", error);
-    }finally{
-        setLoading(false);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <div className="px-2 py-1 hover:bg-black/20 rounded-full cursor-pointer">
           <NotebookPenIcon className="w-4 h-4" />
@@ -55,20 +63,22 @@ const AddNoteDialog = ({ todoId, userId }: { todoId: string, userId: string }) =
         </DialogHeader>
         <div className="py-4">
           <div className="flex flex-col gap-3">
-            <Label htmlFor="note" className="text-lg">
-              Note
-            </Label>
-            <Input
-              id="note"
-              value={note} // ✅ Controlled input
-              onChange={(e) => setNote(e.target.value)} // ✅ Update state
-              placeholder="Write your note here..."
-            />
+            <form onSubmit={handleNote}>
+              <Label htmlFor="note" className="text-lg">
+                Note
+              </Label>
+              <Input
+                id="note"
+                value={note} // ✅ Controlled input
+                onChange={(e) => setNote(e.target.value)} // ✅ Update state
+                placeholder="Write your note here..."
+              />
+            </form>
           </div>
         </div>
         <DialogFooter>
-          <Button type="button" onClick={handleNote}>
-           {loading ? "Adding Note..." : "Add Note"}
+          <Button type="button" disabled={loading}>
+            {loading ? "Adding Note..." : "Add Note"}
           </Button>
         </DialogFooter>
       </DialogContent>
