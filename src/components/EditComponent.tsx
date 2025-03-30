@@ -12,10 +12,19 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { TodoType, useAppContext } from "@/app/context/userContext";
 import axios from "axios";
-import { EditIcon } from "lucide-react";
+import { FaEdit, FaSave, FaSpinner, FaUserPlus, FaTags } from "react-icons/fa";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const EditComponent = ({ todo }: { todo: TodoType }) => {
-  const { fetchTodos } = useAppContext();
+
+  const { fetchTodos, userData } = useAppContext();
+
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -28,36 +37,37 @@ const EditComponent = ({ todo }: { todo: TodoType }) => {
   const [errors, setErrors] = useState({
     title: "",
     description: "",
-
     mentionedUsers: "",
     tags: "",
   });
 
   const [isOpen, setIsOpen] = useState(false);
+
   const [loading, setLoading] = useState(false);
 
-  // Prefill form data when opening the edit dialog
   useEffect(() => {
     if (todo) {
       setFormData({
         title: todo.title,
         description: todo.description,
-        note: todo.note,
+        note: todo.note || [],
         mentionedUsers: todo.mentionedUsers || [],
         priority: todo.priority || "high",
         tags: todo.tags || [],
       });
     }
   }, [todo]);
-  console.log(formData.title);
-  // Handle input change
+
+  const availableUsers = userData?.map((user) => user.displayname) || [];
+
+  // Handle input change 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
 
-    if (name === "tags" || name === "mentionedUsers" || name === "note") {
+    if (name === "tags" || name === "note") {
       setFormData((prevData) => ({
         ...prevData,
-        [name]: value.split(",").map((item) => item.trim()), // Convert comma-separated values to array
+        [name]: value.split(",").map((item) => item.trim()),
       }));
     } else {
       setFormData((prevData) => ({
@@ -66,10 +76,19 @@ const EditComponent = ({ todo }: { todo: TodoType }) => {
       }));
     }
 
-    // Clear errors when user starts typing
     setErrors((prevErrors) => ({
       ...prevErrors,
       [name]: "",
+    }));
+  };
+
+  // Handle mentioned users change
+  const handleMentionedUsersChange = (value: string) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      mentionedUsers: prevData.mentionedUsers.includes(value)
+        ? prevData.mentionedUsers.filter((user) => user !== value)
+        : [...prevData.mentionedUsers, value],
     }));
   };
 
@@ -77,7 +96,7 @@ const EditComponent = ({ todo }: { todo: TodoType }) => {
   const handlePriorityChange = (value: string) => {
     setFormData((prevData) => ({
       ...prevData,
-      priority: value, // Priority is now a string
+      priority: value,
     }));
   };
 
@@ -87,7 +106,6 @@ const EditComponent = ({ todo }: { todo: TodoType }) => {
     const newErrors = {
       title: "",
       description: "",
-
       mentionedUsers: "",
       tags: "",
     };
@@ -109,7 +127,7 @@ const EditComponent = ({ todo }: { todo: TodoType }) => {
     return isValid;
   };
 
-  // Handle form submission (Edit Todo)
+  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -127,7 +145,7 @@ const EditComponent = ({ todo }: { todo: TodoType }) => {
       );
       console.log("Todo Updated:", response.data);
       setIsOpen(false);
-      fetchTodos(todo.user); // Refresh todos after edit
+      fetchTodos(todo.user);
     } catch (error) {
       console.error("Error updating todo:", error);
     } finally {
@@ -138,18 +156,22 @@ const EditComponent = ({ todo }: { todo: TodoType }) => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <span className="hover:bg-black/10 px-2 py-1 rounded-full">
-          <EditIcon className="w-3" />
-        </span>
+        <button className="p-2 rounded-full bg-gray-100 text-gray-600 hover:bg-indigo-100 hover:text-indigo-600 transition-colors">
+          <FaEdit className="w-4 h-4" />
+        </button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="sm:max-w-md bg-white rounded-xl shadow-2xl p-6">
         <DialogHeader>
-          <DialogTitle>Edit Todo</DialogTitle>
+          <DialogTitle className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+            <FaEdit className="text-indigo-600" /> Edit Todo
+          </DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5 mt-4">
           {/* Title */}
           <div>
-            <Label htmlFor="title">Title</Label>
+            <Label htmlFor="title" className="text-sm font-medium text-gray-700">
+              Title
+            </Label>
             <Input
               id="title"
               name="title"
@@ -157,16 +179,20 @@ const EditComponent = ({ todo }: { todo: TodoType }) => {
               placeholder="Enter todo title"
               value={formData.title}
               onChange={handleInputChange}
-              className={errors.title ? "border-red-500" : ""}
+              className={`mt-1 w-full rounded-lg border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 ${
+                errors.title ? "border-red-500" : ""
+              }`}
             />
             {errors.title && (
-              <p className="text-red-500 text-sm">{errors.title}</p>
+              <p className="mt-1 text-red-500 text-xs">{errors.title}</p>
             )}
           </div>
 
           {/* Description */}
           <div>
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description" className="text-sm font-medium text-gray-700">
+              Description
+            </Label>
             <Input
               id="description"
               name="description"
@@ -174,44 +200,78 @@ const EditComponent = ({ todo }: { todo: TodoType }) => {
               placeholder="Enter description"
               value={formData.description}
               onChange={handleInputChange}
-              className={errors.description ? "border-red-500" : ""}
+              className={`mt-1 w-full rounded-lg border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 ${
+                errors.description ? "border-red-500" : ""
+              }`}
             />
             {errors.description && (
-              <p className="text-red-500 text-sm">{errors.description}</p>
+              <p className="mt-1 text-red-500 text-xs">{errors.description}</p>
             )}
           </div>
 
-   {/* Note */}
-   <div>
-            <Label htmlFor="tags">Note</Label>
+          {/* Note */}
+          <div>
+            <Label htmlFor="note" className="text-sm font-medium text-gray-700">
+              Note
+            </Label>
             <Input
               id="note"
               name="note"
               type="text"
-              placeholder="Enter note (comma-separated)"
+              placeholder="Enter notes (comma-separated)"
               value={formData.note.join(", ")}
               onChange={handleInputChange}
-            
+              className="mt-1 w-full rounded-lg border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
             />
-          
           </div>
 
           {/* Mention Users */}
           <div>
-            <Label htmlFor="mentionedUsers">Mention Users</Label>
-            <Input
-              id="mentionedUsers"
-              name="mentionedUsers"
-              type="text"
-              placeholder="Enter users (comma-separated)"
-              value={formData.mentionedUsers.join(", ")}
-              onChange={handleInputChange}
-            />
+            <Label htmlFor="mentionedUsers" className="text-sm font-medium text-gray-700">
+              Mention Users
+            </Label>
+            <Select onValueChange={handleMentionedUsersChange}>
+              <SelectTrigger className="mt-1 w-full rounded-lg border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                <div className="flex items-center gap-2">
+                  <FaUserPlus className="text-gray-500" />
+                  <SelectValue placeholder="Select users to mention" />
+                </div>
+              </SelectTrigger>
+              <SelectContent className="bg-white border-gray-200 shadow-lg rounded-lg max-h-60 overflow-y-auto">
+                {availableUsers.length > 0 ? (
+                  availableUsers.map((user) => (
+                    <SelectItem
+                      key={user}
+                      value={user}
+                      className="flex items-center gap-2 px-3 py-2 hover:bg-indigo-50 hover:text-indigo-600 cursor-pointer transition-colors"
+                    >
+                      {formData.mentionedUsers.includes(user) ? "✓ " : ""} {user}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <div className="px-3 py-2 text-gray-500">No users available</div>
+                )}
+              </SelectContent>
+            </Select>
+            {formData.mentionedUsers.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {formData.mentionedUsers.map((user) => (
+                  <span
+                    key={user}
+                    className="bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full text-xs font-medium"
+                  >
+                    {user}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Tags */}
           <div>
-            <Label htmlFor="tags">Tags</Label>
+            <Label htmlFor="tags" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+              <FaTags className="text-gray-500" /> Tags
+            </Label>
             <Input
               id="tags"
               name="tags"
@@ -219,39 +279,68 @@ const EditComponent = ({ todo }: { todo: TodoType }) => {
               placeholder="Enter tags (comma-separated)"
               value={formData.tags.join(", ")}
               onChange={handleInputChange}
-              className={errors.tags ? "border-red-500" : ""}
+              className={`mt-1 w-full rounded-lg border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 ${
+                errors.tags ? "border-red-500" : ""
+              }`}
             />
+            {formData.tags.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {formData.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium"
+                  >
+                    {"#"}{tag}
+                  </span>
+                ))}
+              </div>
+            )}
             {errors.tags && (
-              <p className="text-red-500 text-sm">{errors.tags}</p>
+              <p className="mt-1 text-red-500 text-xs">{errors.tags}</p>
             )}
           </div>
 
           {/* Priority */}
           <div>
-            <Label>Priority</Label>
+            <Label className="text-sm font-medium text-gray-700">Priority</Label>
             <RadioGroup
               value={formData.priority}
               onValueChange={handlePriorityChange}
-              className="flex"
+              className="mt-2 flex gap-4"
             >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="high" id="high" />
-                <Label htmlFor="high">High</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="medium" id="medium" />
-                <Label htmlFor="medium">Medium</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="low" id="low" />
-                <Label htmlFor="low">Low</Label>
-              </div>
+              {["high", "medium", "low"].map((priority) => (
+                <div key={priority} className="flex items-center space-x-2">
+                  <RadioGroupItem
+                    value={priority}
+                    id={priority}
+                    className="text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <Label
+                    htmlFor={priority}
+                    className="text-sm font-medium text-gray-600 capitalize hover:text-indigo-600 transition-colors cursor-pointer"
+                  >
+                    {priority}
+                  </Label>
+                </div>
+              ))}
             </RadioGroup>
           </div>
 
           {/* Submit Button */}
-          <Button type="submit" className="w-full mt-2" disabled={loading}>
-            {loading ? "Updating..." : "Update Todo"}
+          <Button
+            type="submit"
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg py-2 flex items-center justify-center gap-2 transition-colors"
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <FaSpinner className="animate-spin" /> Updating...
+              </>
+            ) : (
+              <>
+                <FaSave /> Update Todo
+              </>
+            )}
           </Button>
         </form>
       </DialogContent>

@@ -12,8 +12,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import axios from "axios";
-import { NotebookPenIcon } from "lucide-react";
 import { useState } from "react";
+import { FaStickyNote, FaSave, FaSpinner } from "react-icons/fa";
 
 const AddNoteDialog = ({
   todoId,
@@ -22,23 +22,28 @@ const AddNoteDialog = ({
   todoId: string;
   userId: string;
 }) => {
-  const [note, setNote] = useState<string>(""); // ✅ Use string instead of array
+
+  const [note, setNote] = useState<string>("");
+
   const [loading, setLoading] = useState(false);
+
   const [isOpen, setIsOpen] = useState(false);
+
   const { fetchTodos } = useAppContext();
 
+  // Handle form submission
   const handleNote = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!note.trim()) return; // ✅ Prevent empty note submission
+    if (!note.trim()) return; // Prevent empty note submission
     setLoading(true);
     try {
       await axios.put(
-        "/api/todo/edit", // ✅ Ensure this matches your backend route
-        { formData: { note } }, // ✅ Send note correctly
-        { params: { todoId } } // ✅ Pass todoId as query param
+        "/api/todo/edit",
+        { formData: { note: [note] } }, // Send note as an array to match TodoType
+        { params: { todoId } }
       );
-
-      fetchTodos(userId); // ✅ Refresh todo list after update
+      fetchTodos(userId);
+      setNote(""); 
       setIsOpen(false);
     } catch (error) {
       console.error("Failed to update todo:", error);
@@ -50,37 +55,51 @@ const AddNoteDialog = ({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <div className="px-2 py-1 hover:bg-black/20 rounded-full cursor-pointer">
-          <NotebookPenIcon className="w-4 h-4" />
-        </div>
+        <button className="p-2 rounded-full bg-gray-100 text-gray-600 hover:bg-indigo-100 hover:text-indigo-600 transition-colors">
+          <FaStickyNote className="w-4 h-4" />
+        </button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-md bg-white rounded-xl shadow-2xl p-6">
         <DialogHeader>
-          <DialogTitle>Add a Note to ToDo</DialogTitle>
-          <DialogDescription>
-            Enter a note for this ToDo and click &quot;Add Note&quot; to save.
+          <DialogTitle className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+            <FaStickyNote className="text-indigo-600" /> Add a Note
+          </DialogTitle>
+          <DialogDescription className="text-gray-600">
+            Add a note to this todo item. It will be saved with the existing notes.
           </DialogDescription>
         </DialogHeader>
-        <div className="py-4">
-          <div className="flex flex-col gap-3">
-            <form onSubmit={handleNote}>
-              <Label htmlFor="note" className="text-lg">
-                Note
-              </Label>
-              <Input
-                id="note"
-                value={note} // ✅ Controlled input
-                onChange={(e) => setNote(e.target.value)} // ✅ Update state
-                placeholder="Write your note here..."
-              />
-            </form>
+        <form onSubmit={handleNote} className="py-4 space-y-4">
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="note" className="text-sm font-medium text-gray-700">
+              Note
+            </Label>
+            <Input
+              id="note"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="Write your note here..."
+              className="w-full rounded-lg border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+              disabled={loading}
+            />
           </div>
-        </div>
-        <DialogFooter>
-          <Button type="button" disabled={loading}>
-            {loading ? "Adding Note..." : "Add Note"}
-          </Button>
-        </DialogFooter>
+          <DialogFooter>
+            <Button
+              type="submit"
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg py-2 flex items-center justify-center gap-2 transition-colors"
+              disabled={loading || !note.trim()}
+            >
+              {loading ? (
+                <>
+                  <FaSpinner className="animate-spin" /> Adding Note...
+                </>
+              ) : (
+                <>
+                  <FaSave /> Add Note
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );
