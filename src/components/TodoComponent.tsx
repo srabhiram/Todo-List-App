@@ -12,6 +12,7 @@ import EditComponent from "./EditComponent";
 import { timeAgo } from "@/helpers/timeago";
 import AddNoteDialog from "./AddNoteDialog";
 import { useRouter } from "next/navigation";
+import { FaSort, FaFilter, FaTasks, FaPlus } from "react-icons/fa";
 
 const TodoComponent = ({ userId }: { userId: string }) => {
   const { todoData, fetchTodos, loading, setLoading } = useAppContext();
@@ -25,14 +26,11 @@ const TodoComponent = ({ userId }: { userId: string }) => {
   useEffect(() => {
     setLoading(true);
     fetchTodos(userId);
-
-    // ✅ Reset filters when user changes
     setSelectedPriority("");
     setSelectedTags([]);
     setSortBy("");
   }, [fetchTodos, userId, setLoading]);
 
-  // ✅ Memoizing 'TodoData' to update when userId changes
   const TodoData = useMemo(() => {
     return todoData?.filter((todo) => todo.user === userId) || [];
   }, [todoData, userId]);
@@ -76,7 +74,6 @@ const TodoComponent = ({ userId }: { userId: string }) => {
     [sortBy]
   );
 
-  // ✅ Update filteredTodos whenever userId, TodoData, or filters change
   useEffect(() => {
     let updatedTodos = filterTodos(TodoData);
     updatedTodos = sortTodos(updatedTodos);
@@ -109,15 +106,10 @@ const TodoComponent = ({ userId }: { userId: string }) => {
     try {
       await axios.put(
         "/api/todo/edit",
-        {
-          formData: { isCompleted: !currentState }, // Toggle state
-        },
-        {
-          params: { todoId }, // Pass the todoId as a query param
-        }
+        { formData: { isCompleted: !currentState } },
+        { params: { todoId } }
       );
-
-      fetchTodos(userId); // Refresh todo list
+      fetchTodos(userId);
     } catch (error) {
       console.error("Failed to update todo:", error);
     }
@@ -126,54 +118,77 @@ const TodoComponent = ({ userId }: { userId: string }) => {
   if (loading) return <TodoUI />;
 
   return (
-    <>
-      <div className="flex justify-between items-center">
-        <CreateTodoDailog userId={userId} />
-        <div className="flex gap-3">
+    <div className="container mx-auto p-4">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center gap-2">
+          <FaTasks className="text-indigo-600 text-2xl" />
+          <h1 className="text-2xl font-bold text-gray-800">Your Todos</h1>
+        </div>
+        <div className="flex items-center gap-4">
           {/* Sort Dropdown */}
-          <select
-            onChange={(e) => setSortBy(e.target.value)}
-            className="border p-1 rounded"
-          >
-            <option value="">Sort By</option>
-            <option value="date">Newest First</option>
-            <option value="priority">Priority</option>
-          </select>
+          <div className="relative">
+            <FaSort className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500" />
+            <select
+              onChange={(e) => setSortBy(e.target.value)}
+              className="pl-8 pr-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+            >
+              <option value="">Sort By</option>
+              <option value="date">Newest First</option>
+              <option value="priority">Priority</option>
+            </select>
+          </div>
 
           {/* Priority Filter */}
-          <select
-            onChange={(e) => setSelectedPriority(e.target.value)}
-            className="border p-1 rounded"
-          >
-            <option value="">All Priorities</option>
-            <option value="high">High</option>
-            <option value="medium">Medium</option>
-            <option value="low">Low</option>
-          </select>
+          <div className="relative">
+            <FaFilter className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500" />
+            <select
+              onChange={(e) => setSelectedPriority(e.target.value)}
+              className="pl-8 pr-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+            >
+              <option value="">All Priorities</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </div>
+
+          {/* Create Todo Button */}
+          <CreateTodoDailog userId={userId} />
         </div>
       </div>
 
-      <div className="bg-white my-3 p-4 rounded shadow-md">
+      {/* Todo List */}
+      <div className="bg-white rounded-xl shadow-lg overflow-hidden">
         {filteredTodos.length > 0 ? (
           filteredTodos.map((todo) => (
-            <div key={todo._id} className="p-4 border-b">
+            <div
+              key={todo._id}
+              className="p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors"
+            >
               <div className="flex items-center justify-between">
-                <div className="flex gap-4 items-center">
+                <div className="flex items-center gap-4">
                   <Checkbox
-                    className="border-black border-2"
+                    className="h-5 w-5 border-2 border-gray-400 rounded-md text-indigo-600 focus:ring-indigo-500"
                     checked={todo.isCompleted}
-                    onCheckedChange={() => {
-                      handleToggleComplete(todo._id, todo.isCompleted);
-                    }}
+                    onCheckedChange={() =>
+                      handleToggleComplete(todo._id, todo.isCompleted)
+                    }
                   />
                   <button
-                    className="font-semibold"
-                    onClick={() => router.push(`/todos/${todo.user}?todoId=${todo._id}`)}
+                    onClick={() =>
+                      router.push(`/todos/${todo.user}?todoId=${todo._id}`)
+                    }
+                    className={`text-lg font-semibold ${
+                      todo.isCompleted
+                        ? "text-gray-400 line-through"
+                        : "text-gray-800 hover:text-indigo-600"
+                    } transition-colors`}
                   >
                     {todo.title}
                   </button>
                 </div>
-                <div className="flex gap-1 items-center">
+                <div className="flex items-center gap-3">
                   <AddNoteDialog userId={userId} todoId={todo._id} />
                   <EditComponent todo={todo} />
                   <DeleteComponent
@@ -182,35 +197,42 @@ const TodoComponent = ({ userId }: { userId: string }) => {
                   />
                 </div>
               </div>
-              <div className="flex flex-col gap-2 mt-2">
-                {/* Badge for Priority */}
+              <div className="mt-3 flex items-center gap-3">
+                {/* Priority Badge */}
                 {todo.priority && (
                   <span
-                    className={`text-white w-fit text-sm rounded px-1 py-1 ${
+                    className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
                       todo.priority === "high"
-                        ? "bg-red-500"
+                        ? "bg-red-100 text-red-800"
                         : todo.priority === "medium"
-                        ? "bg-yellow-500"
-                        : "bg-green-500"
+                        ? "bg-yellow-100 text-yellow-800"
+                        : "bg-green-100 text-green-800"
                     }`}
                   >
                     {todo.priority.charAt(0).toUpperCase() +
                       todo.priority.slice(1)}
                   </span>
                 )}
-                <p className="text-xs text-gray-500">
+                <span className="text-xs text-gray-500">
                   {timeAgo(todo.createdAt)}
-                </p>
+                </span>
               </div>
             </div>
           ))
         ) : (
-          <div className="w-full text-gray-400 flex justify-center items-center text-center text-xl">
-            <p>No Todos found</p>
+          <div className="p-8 text-center">
+            <FaTasks className="mx-auto text-gray-300 text-4xl mb-4" />
+            <p className="text-gray-500 text-lg">No Todos found</p>
+            <button
+              onClick={() => document.getElementById("create-todo-btn")?.click()}
+              className="mt-4 inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-800 font-medium"
+            >
+              <FaPlus /> Add your first todo
+            </button>
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 };
 
