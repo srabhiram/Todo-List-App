@@ -14,9 +14,17 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import axios from "axios";
 import { useAppContext } from "@/app/context/userContext";
+import { FaPlus, FaSave, FaSpinner, FaUserPlus, FaTags } from "react-icons/fa";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const CreateTodoDialog = ({ userId }: { userId: string }) => {
-  const { fetchTodos } = useAppContext();
+  const { fetchTodos, userData } = useAppContext();
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -32,15 +40,15 @@ const CreateTodoDialog = ({ userId }: { userId: string }) => {
     tags: "",
   });
 
-  console.log(formData);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Handle input change
+  const availableUsers = userData?.map((user) => user.displayname) || [];
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
 
-    if (name === "tags" || name === "mentionedUsers") {
+    if (name === "tags") {
       setFormData((prevData) => ({
         ...prevData,
         [name]: value.split(",").map((item) => item.trim()), // Convert comma-separated values to array
@@ -59,11 +67,21 @@ const CreateTodoDialog = ({ userId }: { userId: string }) => {
     }));
   };
 
+  // Handle mentioned users change
+  const handleMentionedUsersChange = (value: string) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      mentionedUsers: prevData.mentionedUsers.includes(value)
+        ? prevData.mentionedUsers.filter((user) => user !== value)
+        : [...prevData.mentionedUsers, value],
+    }));
+  };
+
   // Handle radio button change
   const handlePriorityChange = (value: string) => {
     setFormData((prevData) => ({
       ...prevData,
-      priority: value, // Priority is now a string
+      priority: value,
     }));
   };
 
@@ -118,20 +136,51 @@ const CreateTodoDialog = ({ userId }: { userId: string }) => {
       setLoading(false);
     }
   };
-
+  // Handle dialog close
+  const handleDialogClose = (open: boolean) => {
+    setIsOpen(open);
+    if (!open) {
+      setFormData({
+        title: "",
+        description: "",
+        mentionedUsers: [] as string[],
+        priority: "high",
+        tags: [] as string[],
+      }); 
+      setErrors({
+        title: "",
+        description: "",
+        mentionedUsers: "",
+        tags: "",
+      }); 
+    }
+  };
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={handleDialogClose}>
       <DialogTrigger asChild>
-        <Button onClick={() => setIsOpen(true)}>Create Todo</Button>
+        <Button
+          onClick={() => setIsOpen(true)}
+          className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg flex items-center gap-2"
+          id="create-todo-btn"
+        >
+          <FaPlus /> Create Todo
+        </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="sm:max-w-md bg-white rounded-xl shadow-2xl p-6">
         <DialogHeader>
-          <DialogTitle>Create Todo</DialogTitle>
+          <DialogTitle className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+            <FaPlus className="text-indigo-600" /> Create Todo
+          </DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5 mt-4">
           {/* Title */}
           <div>
-            <Label htmlFor="title">Title</Label>
+            <Label
+              htmlFor="title"
+              className="text-sm font-medium text-gray-700"
+            >
+              Title
+            </Label>
             <Input
               id="title"
               name="title"
@@ -139,16 +188,23 @@ const CreateTodoDialog = ({ userId }: { userId: string }) => {
               placeholder="Enter todo title"
               value={formData.title}
               onChange={handleInputChange}
-              className={errors.title ? "border-red-500" : ""}
+              className={`mt-1 w-full rounded-lg border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 ${
+                errors.title ? "border-red-500" : ""
+              }`}
             />
             {errors.title && (
-              <p className="text-red-500 text-sm">{errors.title}</p>
+              <p className="mt-1 text-red-500 text-xs">{errors.title}</p>
             )}
           </div>
 
           {/* Description */}
           <div>
-            <Label htmlFor="description">Description</Label>
+            <Label
+              htmlFor="description"
+              className="text-sm font-medium text-gray-700"
+            >
+              Description
+            </Label>
             <Input
               id="description"
               name="description"
@@ -156,29 +212,71 @@ const CreateTodoDialog = ({ userId }: { userId: string }) => {
               placeholder="Enter description"
               value={formData.description}
               onChange={handleInputChange}
-              className={errors.description ? "border-red-500" : ""}
+              className={`mt-1 w-full rounded-lg border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 ${
+                errors.description ? "border-red-500" : ""
+              }`}
             />
             {errors.description && (
-              <p className="text-red-500 text-sm">{errors.description}</p>
+              <p className="mt-1 text-red-500 text-xs">{errors.description}</p>
             )}
           </div>
 
           {/* Mention Users */}
           <div>
-            <Label htmlFor="mentionedUsers">Mention Users</Label>
-            <Input
-              id="mentionedUsers"
-              name="mentionedUsers"
-              type="text"
-              placeholder="Enter users (comma-separated)"
-              value={formData.mentionedUsers.join(", ")}
-              onChange={handleInputChange}
-            />
+            <Label
+              htmlFor="mentionedUsers"
+              className="text-sm font-medium text-gray-700"
+            >
+              Mention Users
+            </Label>
+            <Select onValueChange={handleMentionedUsersChange}>
+              <SelectTrigger className="mt-1 w-full rounded-lg border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                <div className="flex items-center gap-2">
+                  <FaUserPlus className="text-gray-500" />
+                  <SelectValue placeholder="Select users to mention" />
+                </div>
+              </SelectTrigger>
+              <SelectContent className="bg-white border-gray-200 shadow-lg rounded-lg max-h-60 overflow-y-auto">
+                {availableUsers.length > 0 ? (
+                  availableUsers.map((user) => (
+                    <SelectItem
+                      key={user}
+                      value={user}
+                      className="flex items-center gap-2 px-3 py-2 hover:bg-indigo-50 hover:text-indigo-600 cursor-pointer transition-colors"
+                    >
+                      {formData.mentionedUsers.includes(user) ? "✓ " : ""}{" "}
+                      {user}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <div className="px-3 py-2 text-gray-500">
+                    No users available
+                  </div>
+                )}
+              </SelectContent>
+            </Select>
+            {formData.mentionedUsers.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {formData.mentionedUsers.map((user) => (
+                  <span
+                    key={user}
+                    className="bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full text-xs font-medium"
+                  >
+                    {user}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Tags */}
           <div>
-            <Label htmlFor="tags">Tags</Label>
+            <Label
+              htmlFor="tags"
+              className="text-sm font-medium text-gray-700 flex items-center gap-2"
+            >
+              <FaTags className="text-gray-500" /> Tags
+            </Label>
             <Input
               id="tags"
               name="tags"
@@ -186,39 +284,71 @@ const CreateTodoDialog = ({ userId }: { userId: string }) => {
               placeholder="Enter tags (comma-separated)"
               value={formData.tags.join(", ")}
               onChange={handleInputChange}
-              className={errors.tags ? "border-red-500" : ""}
+              className={`mt-1 w-full rounded-lg border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 ${
+                errors.tags ? "border-red-500" : ""
+              }`}
             />
+            {formData.tags.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {formData.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium"
+                  >
+                    {"#"}
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
             {errors.tags && (
-              <p className="text-red-500 text-sm">{errors.tags}</p>
+              <p className="mt-1 text-red-500 text-xs">{errors.tags}</p>
             )}
           </div>
 
           {/* Priority */}
           <div>
-            <Label>Priority</Label>
+            <Label className="text-sm font-medium text-gray-700">
+              Priority
+            </Label>
             <RadioGroup
               value={formData.priority}
               onValueChange={handlePriorityChange}
-              className="flex"
+              className="mt-2 flex gap-4"
             >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="high" id="high" />
-                <Label htmlFor="high">High</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="medium" id="medium" />
-                <Label htmlFor="medium">Medium</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="low" id="low" />
-                <Label htmlFor="low">Low</Label>
-              </div>
+              {["high", "medium", "low"].map((priority) => (
+                <div key={priority} className="flex items-center space-x-2">
+                  <RadioGroupItem
+                    value={priority}
+                    id={priority}
+                    className="text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <Label
+                    htmlFor={priority}
+                    className="text-sm font-medium text-gray-600 capitalize hover:text-indigo-600 transition-colors cursor-pointer"
+                  >
+                    {priority}
+                  </Label>
+                </div>
+              ))}
             </RadioGroup>
           </div>
 
           {/* Submit Button */}
-          <Button type="submit" className="w-full mt-2" disabled={loading}>
-            {loading ? "Creating..." : "Create Todo"}
+          <Button
+            type="submit"
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg py-2 flex items-center justify-center gap-2 transition-colors"
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <FaSpinner className="animate-spin" /> Creating...
+              </>
+            ) : (
+              <>
+                <FaSave /> Create Todo
+              </>
+            )}
           </Button>
         </form>
       </DialogContent>
