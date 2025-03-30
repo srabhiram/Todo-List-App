@@ -21,7 +21,7 @@ type AppContextType = {
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
 };
 // User type
-type User = {
+export type User = {
   _id: string;
   username: string;
   displayname: string;
