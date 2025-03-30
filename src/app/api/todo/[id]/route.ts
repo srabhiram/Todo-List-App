@@ -3,10 +3,15 @@ import Todo from "@/models/todos.models";
 import { NextRequest, NextResponse } from "next/server";
 import {connectDB} from "@/db/dbConfig"; // Ensure MongoDB connection
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest ) {
   try {
     await connectDB(); // Ensure the database is connected
-    const id = await params.id;
+     // Extract `id` from the URL pathname
+     const segments = req.nextUrl.pathname.split("/"); // Split pathname
+     const id = segments.pop() || segments[segments.length - 1]; // Get last part
+ 
+     console.log("Extracted todoId:", id);
+
     const todo = await Todo.findById(id);
 
     if (!todo) {

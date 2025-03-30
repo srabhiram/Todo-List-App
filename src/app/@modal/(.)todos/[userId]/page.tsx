@@ -9,9 +9,11 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 
 export default function TodoModal() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const  todoId  = searchParams.get("todoId");
   const [todo, setTodo] = useState<{
     title: string;
@@ -34,7 +36,7 @@ export default function TodoModal() {
   }, [todoId]);
 
   return (
-    <Dialog defaultOpen>
+    <Dialog defaultOpen onOpenChange={() => router.back()}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{todo?.title || "Loading..."}</DialogTitle>
