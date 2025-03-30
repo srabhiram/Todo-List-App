@@ -44,9 +44,9 @@ const todoSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-if (mongoose.models.Todo) {
-  delete mongoose.models.Todo;
-}
+// if (mongoose.models.Todo) {
+//   delete mongoose.models.Todo;
+// }
 
 const Todo = mongoose.models.Todo || mongoose.model("Todo", todoSchema);
 export default Todo;
