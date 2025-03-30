@@ -9,14 +9,14 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import axios from "axios";
-import { 
-  FaCheckCircle, 
-  FaTimesCircle, 
-  FaCalendarAlt, 
-  FaTag, 
+import {
+  FaCheckCircle,
+  FaTimesCircle,
+  FaCalendarAlt,
+  FaTag,
   FaUser,
   FaStickyNote,
-  FaExclamationCircle
+  FaExclamationCircle,
 } from "react-icons/fa";
 import { timeAgo } from "@/helpers/timeago";
 import { TodoType } from "@/app/context/userContext";
@@ -47,7 +47,9 @@ export default function TodoModal() {
         <DialogHeader>
           <DialogTitle className="text-2xl font-semibold text-gray-800 flex items-center gap-2">
             {todo?.title || "Loading..."}
-            {todo?.priority === "high" && <FaExclamationCircle className="text-red-500" />}
+            {todo?.priority === "high" && (
+              <FaExclamationCircle className="text-red-500" />
+            )}
           </DialogTitle>
           <DialogDescription className="text-gray-600 mt-1 text-base">
             {todo?.description || "No description available"}
@@ -59,9 +61,11 @@ export default function TodoModal() {
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <span className="text-sm font-medium text-gray-600">Status:</span>
-              <div className={`mt-1 flex items-center gap-2 text-sm font-semibold ${
-                todo?.isCompleted ? "text-green-600" : "text-red-600"
-              }`}>
+              <div
+                className={`mt-1 flex items-center gap-2 text-sm font-semibold ${
+                  todo?.isCompleted ? "text-green-600" : "text-red-600"
+                }`}
+              >
                 {todo?.isCompleted ? (
                   <>
                     <FaCheckCircle /> Completed
@@ -74,7 +78,9 @@ export default function TodoModal() {
               </div>
             </div>
             <div className="flex-1">
-              <span className="text-sm font-medium text-gray-600">Priority:</span>
+              <span className="text-sm font-medium text-gray-600">
+                Priority:
+              </span>
               <span
                 className={`mt-1 inline-block px-3 py-1 text-sm font-semibold rounded-full capitalize ${
                   todo?.priority === "high"
@@ -97,10 +103,11 @@ export default function TodoModal() {
             {todo?.tags.length ? (
               <div className="mt-2 flex flex-wrap gap-2">
                 {todo.tags.map((tag, index) => (
-                  <span 
-                    key={index} 
+                  <span
+                    key={index}
                     className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-xs font-medium hover:bg-indigo-200 transition-colors"
                   >
+                    {"#"}
                     {tag}
                   </span>
                 ))}
@@ -118,16 +125,20 @@ export default function TodoModal() {
             {todo?.mentionedUsers.length ? (
               <ul className="mt-2 space-y-1 text-sm text-gray-700">
                 {todo.mentionedUsers.map((user, index) => (
-                  <li 
-                    key={index} 
+                  <li
+                    key={index}
                     className="flex items-center gap-2 hover:text-indigo-600 transition-colors"
                   >
-                    <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span> {user}
+                    <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>{" "}
+                    {"@"}
+                    {user}
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="mt-2 text-sm text-gray-400 italic">No users mentioned</p>
+              <p className="mt-2 text-sm text-gray-400 italic">
+                No users mentioned
+              </p>
             )}
           </div>
 
@@ -139,8 +150,8 @@ export default function TodoModal() {
             {todo?.note.length ? (
               <ul className="mt-2 space-y-2">
                 {todo.note.map((note, index) => (
-                  <li 
-                    key={index} 
+                  <li
+                    key={index}
                     className="bg-gray-50 p-3 rounded-lg text-sm text-gray-700 border border-gray-200 hover:bg-gray-100 transition-colors"
                   >
                     {note}
@@ -148,7 +159,9 @@ export default function TodoModal() {
                 ))}
               </ul>
             ) : (
-              <p className="mt-2 text-sm text-gray-400 italic">No notes available</p>
+              <p className="mt-2 text-sm text-gray-400 italic">
+                No notes available
+              </p>
             )}
           </div>
 

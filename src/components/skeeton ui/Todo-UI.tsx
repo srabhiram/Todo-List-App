@@ -1,91 +1,31 @@
 import React from "react";
+import { FaTasks, FaUserCircle } from "react-icons/fa";
 
-const TodoUI = () => {
+const NavbarUI = () => {
   return (
-    <div className="bg-white my-3 p-4 rounded shadow-md">
-      <div className="p-4 border-b">
-        <div className="flex items-center justify-between">
-          <div className="flex gap-4 items-center animate-pulse">
-            <h1 className="font-semibold w-60 px-3 py-2 bg-gray-300"></h1>
-          </div>
-          <div className="flex gap-3 animate-pulse ">
-            <button className="bg-gray-300 px-3 py-2"></button>
-            <button className="bg-gray-300 px-3 py-2"></button>
-            <button className="bg-gray-300 px-3 py-2"></button>
-          </div>
-        </div>
-        <div className="flex flex-col gap-2 mt-2  animate-pulse">
-          <p className="bg-gray-300 w-60 px-3 py-2"></p>
-          <div className="flex gap-2">
-          <span className=" bg-gray-300 w-fit text-sm rounded px-2 py-1"></span>
-          <span className=" bg-gray-300 w-fit text-sm rounded px-2 py-1"></span>
-          <span className=" bg-gray-300 w-fit text-sm rounded px-2 py-1"></span>
-          </div>
-        </div>
+    <header className="flex justify-between items-center p-4 bg-white shadow-lg border-b border-gray-200 animate-pulse">
+      {/* Skeleton for Logo/Title */}
+      <div className="flex items-center gap-3">
+        <FaTasks className="text-gray-300 text-2xl" />
+        <div className="w-32 h-6 bg-gray-200 rounded-full" />
       </div>
 
-      <div className="p-4 border-b">
-        <div className="flex items-center justify-between">
-          <div className="flex gap-4 items-center animate-pulse">
-            <h1 className="font-semibold w-60 px-3 py-2 bg-gray-300"></h1>
-          </div>
-          <div className="flex gap-3 animate-pulse ">
-            <button className="bg-gray-300 px-3 py-2"></button>
-            <button className="bg-gray-300 px-3 py-2"></button>
-            <button className="bg-gray-300 px-3 py-2"></button>
-          </div>
+      {/* Skeleton for User Selection and Display */}
+      <div className="flex items-center gap-6">
+        {/* Skeleton for Select */}
+        <div className="flex items-center gap-2 w-[180px] h-10 bg-gray-200 rounded-lg px-3">
+          <FaUserCircle className="text-gray-300 text-lg" />
+          <div className="w-full h-3 bg-gray-300 rounded-md" />
         </div>
-        <div className="flex flex-col gap-2 mt-2  animate-pulse">
-          <p className="bg-gray-300 w-60 px-3 py-2"></p>
-          <div className="flex gap-2">
-          <span className=" bg-gray-300 w-fit text-sm rounded px-2 py-1"></span>
-          <span className=" bg-gray-300 w-fit text-sm rounded px-2 py-1"></span>
-          <span className=" bg-gray-300 w-fit text-sm rounded px-2 py-1"></span>
-          </div>
+
+        {/* Skeleton for Current User Display */}
+        <div className="flex items-center gap-3">
+          <FaUserCircle className="text-gray-300 text-xl" />
+          <div className="w-24 h-3 bg-gray-300 rounded-md" />
         </div>
       </div>
-      <div className="p-4 border-b">
-        <div className="flex items-center justify-between">
-          <div className="flex gap-4 items-center animate-pulse">
-            <h1 className="font-semibold w-60 px-3 py-2 bg-gray-300"></h1>
-          </div>
-          <div className="flex gap-3 animate-pulse ">
-            <button className="bg-gray-300 px-3 py-2"></button>
-            <button className="bg-gray-300 px-3 py-2"></button>
-            <button className="bg-gray-300 px-3 py-2"></button>
-          </div>
-        </div>
-        <div className="flex flex-col gap-2 mt-2  animate-pulse">
-          <p className="bg-gray-300 w-60 px-3 py-2"></p>
-          <div className="flex gap-2">
-          <span className=" bg-gray-300 w-fit text-sm rounded px-2 py-1"></span>
-          <span className=" bg-gray-300 w-fit text-sm rounded px-2 py-1"></span>
-          <span className=" bg-gray-300 w-fit text-sm rounded px-2 py-1"></span>
-          </div>
-        </div>
-      </div>
-      <div className="p-4 border-b">
-        <div className="flex items-center justify-between">
-          <div className="flex gap-4 items-center animate-pulse">
-            <h1 className="font-semibold w-60 px-3 py-2 bg-gray-300"></h1>
-          </div>
-          <div className="flex gap-3 animate-pulse ">
-            <button className="bg-gray-300 px-3 py-2"></button>
-            <button className="bg-gray-300 px-3 py-2"></button>
-            <button className="bg-gray-300 px-3 py-2"></button>
-          </div>
-        </div>
-        <div className="flex flex-col gap-2 mt-2  animate-pulse">
-          <p className="bg-gray-300 w-60 px-3 py-2"></p>
-          <div className="flex gap-2">
-          <span className=" bg-gray-300 w-fit text-sm rounded px-2 py-1"></span>
-          <span className=" bg-gray-300 w-fit text-sm rounded px-2 py-1"></span>
-          <span className=" bg-gray-300 w-fit text-sm rounded px-2 py-1"></span>
-          </div>
-        </div>
-      </div>
-    </div>
+    </header>
   );
 };
 
-export default TodoUI;
+export default NavbarUI;

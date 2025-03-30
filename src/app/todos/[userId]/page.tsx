@@ -101,7 +101,7 @@ export default function TodoModal() {
                     key={index} 
                     className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-xs font-medium hover:bg-indigo-200 transition-colors"
                   >
-                    {tag}
+                         {"#"}{tag}
                   </span>
                 ))}
               </div>
@@ -122,7 +122,7 @@ export default function TodoModal() {
                     key={index} 
                     className="flex items-center gap-2 hover:text-indigo-600 transition-colors"
                   >
-                    <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span> {user}
+                    <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>{"@"} {user}
                   </li>
                 ))}
               </ul>
