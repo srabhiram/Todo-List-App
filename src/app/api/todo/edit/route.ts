@@ -5,11 +5,11 @@ import { NextRequest, NextResponse } from "next/server";
 export async function PUT(req: NextRequest) {
   try {
     const {
-      formData: { title, description, priority, note, tags, mentionedUsers },
+      formData: { title, description, priority, note, tags, mentionedUsers, isCompleted },
     } = await req.json();
     const todoId = req.nextUrl.searchParams.get("todoId");
     console.log(todoId);
-    console.log(title, description, priority, note, tags, mentionedUsers);
+    console.log(title, description, priority, note, tags, mentionedUsers, isCompleted);
     if (!todoId) {
       return NextResponse.json(
         { message: "Todo ID is required" },
@@ -19,7 +19,7 @@ export async function PUT(req: NextRequest) {
 
     const updatedTodo = await Todo.findByIdAndUpdate(
       todoId,
-      { title, description, priority, note, tags, mentionedUsers } // Update fields
+      { title, description, priority, note, tags, mentionedUsers, isCompleted } // Update fields
     );
 
     if (!updatedTodo) {

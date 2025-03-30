@@ -38,6 +38,7 @@ export type TodoType = {
   tags: string[];
   note: string[];
   user: string;
+  createdAt: Date;
 };
 
 const AppContext = createContext<AppContextType | null>(null);

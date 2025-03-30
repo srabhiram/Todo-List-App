@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -10,15 +10,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { TodoType, useAppContext } from '@/app/context/userContext';
-import axios from 'axios';
-import {  EditIcon } from 'lucide-react';
+import { TodoType, useAppContext } from "@/app/context/userContext";
+import axios from "axios";
+import { EditIcon } from "lucide-react";
 
 const EditComponent = ({ todo }: { todo: TodoType }) => {
   const { fetchTodos } = useAppContext();
   const [formData, setFormData] = useState({
     title: "",
     description: "",
+    note: [] as string[],
     mentionedUsers: [] as string[],
     priority: "high",
     tags: [] as string[],
@@ -27,6 +28,7 @@ const EditComponent = ({ todo }: { todo: TodoType }) => {
   const [errors, setErrors] = useState({
     title: "",
     description: "",
+
     mentionedUsers: "",
     tags: "",
   });
@@ -40,13 +42,14 @@ const EditComponent = ({ todo }: { todo: TodoType }) => {
       setFormData({
         title: todo.title,
         description: todo.description,
+        note: todo.note,
         mentionedUsers: todo.mentionedUsers || [],
         priority: todo.priority || "high",
         tags: todo.tags || [],
       });
     }
   }, [todo]);
-console.log(formData.title)
+  console.log(formData.title);
   // Handle input change
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -84,6 +87,7 @@ console.log(formData.title)
     const newErrors = {
       title: "",
       description: "",
+
       mentionedUsers: "",
       tags: "",
     };
@@ -112,11 +116,15 @@ console.log(formData.title)
 
     setLoading(true);
     try {
-      const response = await axios.put(`/api/todo/edit`, {formData}, {
-        params: {
-          todoId: todo._id,
+      const response = await axios.put(
+        `/api/todo/edit`,
+        { formData },
+        {
+          params: {
+            todoId: todo._id,
+          },
         }
-      });
+      );
       console.log("Todo Updated:", response.data);
       setIsOpen(false);
       fetchTodos(todo.user); // Refresh todos after edit
@@ -130,7 +138,9 @@ console.log(formData.title)
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-       <span className='hover:bg-black/10 px-2 py-1 rounded-full'><EditIcon className='w-3'/></span>
+        <span className="hover:bg-black/10 px-2 py-1 rounded-full">
+          <EditIcon className="w-3" />
+        </span>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -169,6 +179,21 @@ console.log(formData.title)
             {errors.description && (
               <p className="text-red-500 text-sm">{errors.description}</p>
             )}
+          </div>
+
+   {/* Note */}
+   <div>
+            <Label htmlFor="tags">Note</Label>
+            <Input
+              id="note"
+              name="note"
+              type="text"
+              placeholder="Enter note (comma-separated)"
+              value={formData.note.join(", ")}
+              onChange={handleInputChange}
+            
+            />
+          
           </div>
 
           {/* Mention Users */}

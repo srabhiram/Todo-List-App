@@ -20,10 +20,10 @@ const DeleteComponent = ({
   return (
     <AlertDialog>
       <AlertDialogTrigger>
-        <button className="px-2 py-1 hover:bg-red-200 rounded-full">
+        <div className="px-2 py-1 hover:bg-red-200 rounded-full">
           {" "}
           <Trash className="w-3 " />
-        </button>
+        </div>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>

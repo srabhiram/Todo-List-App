@@ -1,33 +1,96 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect, useState, useMemo } from "react";
 import CreateTodoDailog from "./TodoDailog";
 import { Checkbox } from "./ui/checkbox";
-import { useAppContext } from "@/app/context/userContext";
+import { TodoType, useAppContext } from "@/app/context/userContext";
 import TodoUI from "./skeeton ui/Todo-UI";
-import { Edit } from "lucide-react";
 import axios from "axios";
 import DeleteComponent from "./DeleteComponent";
 import EditComponent from "./EditComponent";
-
-// type Priority = {
-//   high: boolean;
-//   medium: boolean;
-//   low: boolean;
-// };
+import { timeAgo } from "@/helpers/timeago";
+import AddNoteDialog from "./AddNoteDialog";
 
 const TodoComponent = ({ userId }: { userId: string }) => {
   const { todoData, fetchTodos, loading, setLoading } = useAppContext();
+  const [filteredTodos, setFilteredTodos] = useState<TodoType[]>([]);
+  const [selectedPriority, setSelectedPriority] = useState<string>("");
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [sortBy, setSortBy] = useState<string>("");
+
   useEffect(() => {
     setLoading(true);
     fetchTodos(userId);
+
+    // ✅ Reset filters when user changes
+    setSelectedPriority("");
+    setSelectedTags([]);
+    setSortBy("");
   }, [fetchTodos, userId, setLoading]);
-  const TodoData = todoData?.filter((todo) => todo.user === userId) || [];
-  
+
+  // ✅ Memoizing 'TodoData' to update when userId changes
+  const TodoData = useMemo(() => {
+    return todoData?.filter((todo) => todo.user === userId) || [];
+  }, [todoData, userId]);
+
+  const filterTodos = useCallback(
+    (todos: TodoType[]): TodoType[] => {
+      return todos.filter((todo) => {
+        const matchesTags =
+          selectedTags.length === 0 ||
+          selectedTags.some((tag) => todo.tags?.includes(tag));
+        const matchesPriority =
+          selectedPriority === "" || todo.priority === selectedPriority;
+        return matchesTags && matchesPriority;
+      });
+    },
+    [selectedTags, selectedPriority]
+  );
+
+  const sortTodos = useCallback(
+    (todos: TodoType[]): TodoType[] => {
+      return [...todos].sort((a, b) => {
+        if (sortBy === "date") {
+          return (
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+        }
+        if (sortBy === "priority") {
+          const priorityOrder: Record<string, number> = {
+            high: 3,
+            medium: 2,
+            low: 1,
+          };
+          return (
+            (priorityOrder[b.priority || "low"] || 1) -
+            (priorityOrder[a.priority || "low"] || 1)
+          );
+        }
+        return 0;
+      });
+    },
+    [sortBy]
+  );
+
+  // ✅ Update filteredTodos whenever userId, TodoData, or filters change
+  useEffect(() => {
+    let updatedTodos = filterTodos(TodoData);
+    updatedTodos = sortTodos(updatedTodos);
+    setFilteredTodos(updatedTodos);
+  }, [
+    userId,
+    TodoData,
+    selectedPriority,
+    selectedTags,
+    sortBy,
+    filterTodos,
+    sortTodos,
+  ]);
+
   const handleTodoDelete = async (todo_id: string) => {
     try {
-      axios.delete("/api/todo/delete", {
+      await axios.delete("/api/todo/delete", {
         params: { todoId: todo_id },
       });
       fetchTodos(userId);
@@ -35,29 +98,76 @@ const TodoComponent = ({ userId }: { userId: string }) => {
       console.log(error.message);
     }
   };
+
+  const handleToggleComplete = async (
+    todoId: string,
+    currentState: boolean
+  ) => {
+    try {
+      await axios.put(
+        "/api/todo/edit",
+        {
+          formData: { isCompleted: !currentState }, // Toggle state
+        },
+        {
+          params: { todoId }, // Pass the todoId as a query param
+        }
+      );
+
+      fetchTodos(userId); // Refresh todo list
+    } catch (error) {
+      console.error("Failed to update todo:", error);
+    }
+  };
+
   if (loading) return <TodoUI />;
+
   return (
     <>
-      <CreateTodoDailog userId={userId} />
+      <div className="flex justify-between items-center">
+        <CreateTodoDailog userId={userId} />
+        <div className="flex gap-3">
+          {/* Sort Dropdown */}
+          <select
+            onChange={(e) => setSortBy(e.target.value)}
+            className="border p-1 rounded"
+          >
+            <option value="">Sort By</option>
+            <option value="date">Newest First</option>
+            <option value="priority">Priority</option>
+          </select>
+
+          {/* Priority Filter */}
+          <select
+            onChange={(e) => setSelectedPriority(e.target.value)}
+            className="border p-1 rounded"
+          >
+            <option value="">All Priorities</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
+        </div>
+      </div>
+
       <div className="bg-white my-3 p-4 rounded shadow-md">
-        {TodoData?.length > 0 ? (
-          TodoData?.map((todo) => (
+        {filteredTodos.length > 0 ? (
+          filteredTodos.map((todo) => (
             <div key={todo._id} className="p-4 border-b">
               <div className="flex items-center justify-between">
                 <div className="flex gap-4 items-center">
                   <Checkbox
                     className="border-black border-2"
                     checked={todo.isCompleted}
-                    onCheckedChange={() => {}}
+                    onCheckedChange={() => {
+                      handleToggleComplete(todo._id, todo.isCompleted);
+                    }}
                   />
                   <h1 className="font-semibold">{todo.title}</h1>
                 </div>
                 <div className="flex gap-1 items-center">
-                  <span className="cursor-pointer text-xs tracking-wide font-medium flex gap-0.5 items-center  hover:bg-black/10 px-1 py-0.5 text-black  rounded ">
-                    <Edit className="w-3 " /> Add Note
-                  </span>
-                  <EditComponent todo = {todo}/>
-
+                 <AddNoteDialog userId={userId} todoId={todo._id}/>
+                  <EditComponent todo={todo} />
                   <DeleteComponent
                     todoId={todo._id}
                     handleTodoDelete={handleTodoDelete}
@@ -65,16 +175,24 @@ const TodoComponent = ({ userId }: { userId: string }) => {
                 </div>
               </div>
               <div className="flex flex-col gap-2 mt-2">
-                badge
-                {/* {(todo.priority.high || todo.priority.medium || todo.priority.low) && (
-                  <span className="text-white bg-red-500 w-fit text-sm rounded px-1 py-1">
-                    {todo.priority.high
-                      ? "High"
-                      : todo.priority.medium
-                      ? "Medium"
-                      : "Low"}
+                {/* Badge for Priority */}
+                {todo.priority && (
+                  <span
+                    className={`text-white w-fit text-sm rounded px-1 py-1 ${
+                      todo.priority === "high"
+                        ? "bg-red-500"
+                        : todo.priority === "medium"
+                        ? "bg-yellow-500"
+                        : "bg-green-500"
+                    }`}
+                  >
+                    {todo.priority.charAt(0).toUpperCase() +
+                      todo.priority.slice(1)}
                   </span>
-                )} */}
+                )}
+                <p className="text-xs text-gray-500">
+                  {timeAgo(todo.createdAt)}
+                </p>
               </div>
             </div>
           ))
