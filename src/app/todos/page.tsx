@@ -21,12 +21,6 @@ const TodoPage = () => {
     }
   }, [userData, currentUser]);
 
-  // // Fetch todos when currentUser changes
-  // useEffect(() => {
-  //   if (currentUser?._id) {
-  //     fetchTodos(currentUser._id);
-  //   }
-  // }, [currentUser, fetchTodos]);
 
   return (
     <>

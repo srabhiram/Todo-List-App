@@ -22,8 +22,11 @@ import { timeAgo } from "@/helpers/timeago";
 import { TodoType } from "@/app/context/userContext";
 
 export default function TodoModal() {
+
   const searchParams = useSearchParams();
+
   const router = useRouter();
+  
   const todoId = searchParams.get("todoId");
 
   const [todo, setTodo] = useState<TodoType | null>(null);
