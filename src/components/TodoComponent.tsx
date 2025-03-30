@@ -11,6 +11,7 @@ import DeleteComponent from "./DeleteComponent";
 import EditComponent from "./EditComponent";
 import { timeAgo } from "@/helpers/timeago";
 import AddNoteDialog from "./AddNoteDialog";
+import { useRouter } from "next/navigation";
 
 const TodoComponent = ({ userId }: { userId: string }) => {
   const { todoData, fetchTodos, loading, setLoading } = useAppContext();
@@ -18,6 +19,8 @@ const TodoComponent = ({ userId }: { userId: string }) => {
   const [selectedPriority, setSelectedPriority] = useState<string>("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<string>("");
+
+  const router = useRouter();
 
   useEffect(() => {
     setLoading(true);
@@ -163,10 +166,15 @@ const TodoComponent = ({ userId }: { userId: string }) => {
                       handleToggleComplete(todo._id, todo.isCompleted);
                     }}
                   />
-                  <h1 className="font-semibold">{todo.title}</h1>
+                  <button
+                    className="font-semibold"
+                    onClick={() => router.push(`/todos/${todo.user}?todoId=${todo._id}`)}
+                  >
+                    {todo.title}
+                  </button>
                 </div>
                 <div className="flex gap-1 items-center">
-                 <AddNoteDialog userId={userId} todoId={todo._id}/>
+                  <AddNoteDialog userId={userId} todoId={todo._id} />
                   <EditComponent todo={todo} />
                   <DeleteComponent
                     todoId={todo._id}
